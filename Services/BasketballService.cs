@@ -7,11 +7,9 @@ namespace RussiaBasketBot.Services;
 
 public class BasketballService(ILogger<BasketballService> logger, MongoDbContext db)
 {
-    public async Task<List<MatchVm>> GetMatches(bool newestOrLatest, int limit = 8)
+    public async Task<List<MatchVm>> GetMatches(bool newestOrLatest, int limit = 8, DateOnly? date = null)
     {
         var teams = await db.Teams.Find(x => true).ToListAsync();
-
-        Expression<Func<Match, bool>> filterExpr = x => newestOrLatest ? x.Status == MatchStatus.Plan : x.Status == MatchStatus.Live || x.Status == MatchStatus.Finish;
 
         IFindFluent<Match, Match> query;
         if (newestOrLatest)
@@ -26,7 +24,9 @@ public class BasketballService(ILogger<BasketballService> logger, MongoDbContext
                 .SortByDescending(x => x.Date);
         }
 
-        var matches = (await query.Limit(limit).ToListAsync()).OrderBy(m => m.Date);
+        var matches = (await query.Limit(limit).ToListAsync()).OrderBy(m => m.Date).ToList();
+        if (date != null)
+            matches = matches.Where(x => DateOnly.FromDateTime(x.Date) == date.Value).ToList();
 
         return matches.Select(m => MatchVm.FromMatch(m).FillTeams(teams)).ToList();
     }

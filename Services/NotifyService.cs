@@ -15,7 +15,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
         {
             logger.LogInformation("Starting match parsing and notification process");
             await parserService.ParseMatches();
-            await NotifyTelegramGroups(newestOrLatest, token);
+            await NotifyTelegramGroups(newestOrLatest, token, date: DateOnly.FromDateTime(DateTime.UtcNow));
         }
         catch (Exception ex)
         {
@@ -24,7 +24,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
         }
     }
 
-    public async Task NotifyTelegramGroups(bool newestOrLatest, CancellationToken cancellationToken, long? chatId = null)
+    public async Task NotifyTelegramGroups(bool newestOrLatest, CancellationToken cancellationToken, long? chatId = null, DateOnly? date = null)
     {
         try
         {
@@ -34,13 +34,15 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
 
             if (!chatIdList.Any()) return;
 
-            var matches = await basketballService.GetMatches(newestOrLatest);
+            var matches = await basketballService.GetMatches(newestOrLatest, date: date);
 
             if (chatId != null && !matches.Any())
             {
                 await botClient.SendMessage(chatId: chatId, text: "Матчи не найдены", cancellationToken: cancellationToken);
                 return;
             }
+
+            if (!matches.Any()) return;
 
             var messageText = new StringBuilder($"{(newestOrLatest ? "Ближайшие" : "Недавние")} матчи:\n\n");
             foreach (var match in matches)
