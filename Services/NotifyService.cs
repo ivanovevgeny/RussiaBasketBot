@@ -14,7 +14,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
         try
         {
             logger.LogInformation("Starting match parsing and notification process");
-            await parserService.ParseMatches();
+            await parserService.ParseMatches(true);
             await NotifyTelegramGroups(newestOrLatest, token, date: DateOnly.FromDateTime(DateTime.UtcNow));
         }
         catch (Exception ex)

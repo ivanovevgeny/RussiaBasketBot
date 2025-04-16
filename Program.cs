@@ -8,8 +8,17 @@ using Serilog;
 using RussiaBasketBot.Models;
 using RussiaBasketBot.ViewModels;
 using Telegram.Bot;
+using System.Reflection;
 
-var builder = WebApplication.CreateBuilder(args);
+var contentRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+var options = new WebApplicationOptions
+{
+    ContentRootPath = contentRoot,
+    Args = args
+};
+
+var builder = WebApplication.CreateBuilder(options);
 
 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
@@ -25,10 +34,10 @@ try
 {
     Log.Information("Starting up the service");
 
-    builder.Host.UseWindowsService(options => { options.ServiceName = "RussiaBasketBot"; });
+    builder.Host
+        .UseWindowsService(options => { options.ServiceName = "RussiaBasketBot"; });
 
     builder.Configuration
-        .SetBasePath(builder.Environment.ContentRootPath)
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
     //if (builder.Environment.IsDevelopment())
@@ -108,7 +117,7 @@ void ConfigureEndpoints(WebApplication app)
             try
             {
                 var teamsCount = await service.ParseTeams();
-                var matchesCount = await service.ParseMatches();
+                var matchesCount = await service.ParseMatches(true);
                 return TypedResults.Ok($"Database initialized successfully. Teams count: {teamsCount}, matches count: {matchesCount}");
             }
             catch (Exception ex)

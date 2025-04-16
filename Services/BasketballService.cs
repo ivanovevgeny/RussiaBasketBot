@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using RussiaBasketBot.Models;
+﻿using RussiaBasketBot.Models;
 using MongoDB.Driver;
 using RussiaBasketBot.ViewModels;
 
@@ -24,11 +23,11 @@ public class BasketballService(ILogger<BasketballService> logger, MongoDbContext
                 .SortByDescending(x => x.Date);
         }
 
-        var matches = (await query.Limit(limit).ToListAsync()).OrderBy(m => m.Date).ToList();
+        var matches = (await query/*.Limit(limit)*/.ToListAsync()).ToList();
         if (date != null)
             matches = matches.Where(x => DateOnly.FromDateTime(x.Date) == date.Value).ToList();
 
-        return matches.Select(m => MatchVm.FromMatch(m).FillTeams(teams)).ToList();
+        return matches.Take(limit).Select(m => MatchVm.FromMatch(m).FillTeams(teams)).ToList();
     }
 
     public async Task<List<Team>> GetTeams()
