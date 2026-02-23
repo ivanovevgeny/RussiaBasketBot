@@ -104,7 +104,7 @@ void ConfigureHangfireJobs()
 
     RecurringJob.AddOrUpdate<NotifyService>("MorningUpdate", service => service.ParseAndNotify(true, CancellationToken.None), "0 9 * * *", new RecurringJobOptions { TimeZone = mscTimeZone });
 
-    RecurringJob.AddOrUpdate<NotifyService>("EveningUpdate", service => service.ParseAndNotify(false, CancellationToken.None), "0 21 * * *", new RecurringJobOptions { TimeZone = mscTimeZone });
+    RecurringJob.AddOrUpdate<NotifyService>("EveningUpdate", service => service.ParseAndNotify(false, CancellationToken.None), "0 22 * * *", new RecurringJobOptions { TimeZone = mscTimeZone });
 }
 
 void ConfigureEndpoints(WebApplication app)

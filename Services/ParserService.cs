@@ -86,6 +86,91 @@ public class ParserService(ILogger<ParserService> logger, MongoDbContext db)
         }
     }
 
+    public async Task<List<StandingEntry>> ParseStandings()
+    {
+        try
+        {
+            logger.LogInformation("Parsing standings");
+
+            var web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync($"{BaseUrl}/superliga/men/polozhenie/");
+
+            var table = doc.DocumentNode.SelectSingleNode("//table[contains(@class,'tourtable')]") ??
+                        doc.DocumentNode.SelectSingleNode("//div[contains(@class,'tourtable')]//table");
+
+            if (table == null)
+            {
+                logger.LogWarning("Standings table not found");
+                return [];
+            }
+
+            // Определяем индексы нужных колонок по тексту заголовков
+            var headers = table.SelectNodes(".//thead//th | .//tr[1]//th")
+                ?.Select(th => th.InnerText.Trim())
+                .ToList() ?? [];
+
+            int idxPlayed  = FindColumnIndex(headers, "И");
+            int idxWins    = FindColumnIndex(headers, "В");
+            int idxLosses  = FindColumnIndex(headers, "П");
+            int idxPoints  = FindColumnIndex(headers, "Очки");
+
+            var rows = table.SelectNodes(".//tbody//tr") ?? table.SelectNodes(".//tr[position()>1]");
+            if (rows == null) return [];
+
+            var standings = new List<StandingEntry>();
+            int autoPlace = 1;
+
+            foreach (var row in rows)
+            {
+                try
+                {
+                    var cells = row.SelectNodes(".//td");
+                    if (cells == null || cells.Count < 4) continue;
+
+                    var placeText = cells[0].InnerText.Trim();
+                    var place = int.TryParse(placeText, out var p) ? p : autoPlace;
+
+                    // Название команды — второй td, берём текст без дочерних тегов (img и т.п.)
+                    var teamName = cells[1].SelectSingleNode(".//a")?.InnerText.Trim()
+                                   ?? cells[1].InnerText.Trim();
+                    teamName = System.Net.WebUtility.HtmlDecode(teamName);
+
+                    int played  = GetCellInt(cells, idxPlayed);
+                    int wins    = GetCellInt(cells, idxWins);
+                    int losses  = GetCellInt(cells, idxLosses);
+                    int points  = GetCellInt(cells, idxPoints);
+
+                    standings.Add(new StandingEntry(place, teamName, played, wins, losses, points));
+                    autoPlace++;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error parsing standings row");
+                }
+            }
+
+            logger.LogInformation("Parsed {Count} standings entries", standings.Count);
+            return standings;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to parse standings");
+            throw;
+        }
+    }
+
+    private static int FindColumnIndex(List<string> headers, string name)
+    {
+        var idx = headers.FindIndex(h => h.Equals(name, StringComparison.OrdinalIgnoreCase));
+        return idx >= 0 ? idx : -1;
+    }
+
+    private static int GetCellInt(HtmlNodeCollection cells, int index)
+    {
+        if (index < 0 || index >= cells.Count) return 0;
+        return int.TryParse(cells[index].InnerText.Trim(), out var v) ? v : 0;
+    }
+
     public async Task<int> ParseMatches(bool updateAll = false)
     {
         try

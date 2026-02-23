@@ -30,6 +30,19 @@ public class BasketballService(ILogger<BasketballService> logger, MongoDbContext
         return matches.Take(limit).Select(m => MatchVm.FromMatch(m).FillTeams(teams)).ToList();
     }
 
+    public async Task<List<MatchVm>> GetMatchesByTeam(int teamId)
+    {
+        var teams = await db.Teams.Find(x => true).ToListAsync();
+
+        var matches = await db.Matches
+            .Find(x => x.Status == MatchStatus.Plan &&
+                       (x.HomeTeamId == teamId || x.GuestTeamId == teamId))
+            .SortBy(x => x.Date)
+            .ToListAsync();
+
+        return matches.Select(m => MatchVm.FromMatch(m).FillTeams(teams)).ToList();
+    }
+
     public async Task<List<Team>> GetTeams()
     {
         return await db.Teams.Find(x => true).ToListAsync();

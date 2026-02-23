@@ -9,6 +9,79 @@ namespace RussiaBasketBot.Services;
 
 public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, ParserService parserService, BasketballService basketballService, ITelegramBotClient botClient)
 {
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(3);
+    private readonly Dictionary<string, (string Text, DateTime Expiry)> _cache = new();
+
+    private bool TryGetCache(string key, out string text)
+    {
+        if (_cache.TryGetValue(key, out var entry) && DateTime.UtcNow < entry.Expiry)
+        {
+            text = entry.Text;
+            return true;
+        }
+        text = string.Empty;
+        return false;
+    }
+
+    private void SetCache(string key, string text) =>
+        _cache[key] = (text, DateTime.UtcNow.Add(CacheTtl));
+
+    public async Task<string> GetStandingsMessage(CancellationToken cancellationToken)
+    {
+        const string cacheKey = "standings";
+        if (TryGetCache(cacheKey, out var cached)) return cached;
+
+        var standings = await parserService.ParseStandings();
+        if (standings.Count == 0) return "Таблица не найдена";
+
+        const int nameWidth = 18;
+        var sb = new StringBuilder();
+        sb.AppendLine("🏆 <b>Положение команд</b>");
+        sb.AppendLine("<pre>");
+        sb.AppendLine($"{"#",2} {"Команда",-nameWidth} {"В",2} {"П",2} {"Оч",2}");
+        sb.AppendLine(new string('─', 2 + 1 + nameWidth + 1 + 2 + 1 + 2 + 1 + 2));
+
+        foreach (var s in standings)
+        {
+            var name = ShortenTeamName(s.TeamName, nameWidth);
+            sb.AppendLine($"{s.Place,2} {name,-nameWidth} {s.Wins,2} {s.Losses,2} {s.Points,2}");
+        }
+
+        sb.Append("</pre>");
+
+        var message = sb.ToString();
+        SetCache(cacheKey, message);
+        return message;
+    }
+
+    public async Task<string> GetScheduleMessage(int teamId, string teamName, CancellationToken cancellationToken)
+    {
+        var cacheKey = $"schedule_{teamId}";
+        if (TryGetCache(cacheKey, out var cached)) return cached;
+
+        var matches = await basketballService.GetMatchesByTeam(teamId);
+
+        if (matches.Count == 0)
+        {
+            var noMatches = $"Запланированных матчей для команды <b>{teamName}</b> не найдено";
+            SetCache(cacheKey, noMatches);
+            return noMatches;
+        }
+
+        var sb = new StringBuilder($"📅 Расписание — <b>{teamName}</b>:\n\n");
+        foreach (var match in matches)
+        {
+            sb.AppendLine($"🏀 {match.HomeTeamName} vs {match.GuestTeamName}");
+            sb.AppendLine($"Дата: {match.DateMsc:dd.MM.yyyy HH:mm (мск)}");
+            sb.AppendLine($"<a href='{match.Url}'>{match.UrlText}</a>");
+            sb.AppendLine();
+        }
+
+        var message = sb.ToString();
+        SetCache(cacheKey, message);
+        return message;
+    }
+
     public async Task ParseAndNotify(bool newestOrLatest, CancellationToken token)
     {
         try
@@ -35,6 +108,13 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
             if (!chatIdList.Any()) return;
 
             var matches = await basketballService.GetMatches(newestOrLatest, date: date);
+
+            // если ищем последние матчи и есть те, что в Процессе, то парсим заново
+            if (!newestOrLatest && matches.Any(x => x.Status is MatchStatus.Live or MatchStatus.Plan))
+            {
+                await parserService.ParseMatches(true);
+                matches = await basketballService.GetMatches(newestOrLatest, date: date);
+            }
 
             if (chatId != null && !matches.Any())
             {
@@ -109,6 +189,29 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
             logger.LogError(ex, "Failed to subscribe chat {ChatId}", message.Chat.Id);
             await botClient.SendMessage(chatId: message.Chat.Id, text: "❌ Ошибка. Пожалуйста, попробуйте позже.", cancellationToken: cancellationToken);
         }
+    }
+
+    // "Динамо (Приморский край)" → "Динамо (Примор.)"
+    private static string ShortenTeamName(string name, int maxWidth)
+    {
+        if (name.Length <= maxWidth) return name;
+
+        var parenIdx = name.IndexOf('(');
+        if (parenIdx < 0) return name[..(maxWidth - 1)] + "…";
+
+        var prefix = name[..parenIdx];                         // "Динамо "
+        var city = name[(parenIdx + 1)..].TrimEnd(')').Trim(); // "Приморский край"
+
+        // символов доступно внутри скобок
+        var available = maxWidth - prefix.Length - 2; // -2 для "(" и ")"
+        if (available <= 1) return (prefix.TrimEnd() + "…")[..maxWidth];
+
+        var firstWord = city.Split(' ')[0];
+        var shortened = firstWord.Length <= available - 1
+            ? firstWord + "."
+            : firstWord[..(available - 1)] + ".";
+
+        return $"{prefix}({shortened})";
     }
 
     public async Task Unsubscribe(Message message, CancellationToken cancellationToken)
