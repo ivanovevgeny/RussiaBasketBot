@@ -56,10 +56,19 @@ try
 
     builder.Services.AddHangfire(connectionString!);
 
-    builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(AppSettings.TelegramBotToken));
-
-    builder.Services.AddHttpClient("tghttpClient").AddTypedClient<ITelegramBotClient>(
-        httpClient => new TelegramBotClient(AppSettings.TelegramBotToken, httpClient));
+    builder.Services.AddHttpClient("tghttpClient")
+        .ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            var handler = new HttpClientHandler();
+            if (!string.IsNullOrWhiteSpace(AppSettings.TelegramProxyUrl))
+                handler.Proxy = new System.Net.WebProxy(AppSettings.TelegramProxyUrl, false);
+            return handler;
+        })
+        .AddTypedClient<ITelegramBotClient>(httpClient =>
+        {
+            httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
+            return new TelegramBotClient(AppSettings.TelegramBotToken, httpClient);
+        });
     
     builder.Services.AddSingleton<BasketballService>();
 

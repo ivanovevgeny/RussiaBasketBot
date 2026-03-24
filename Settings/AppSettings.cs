@@ -4,5 +4,7 @@ public class AppSettings
 {
     public static string TelegramBotToken { get; set; } = "";
 
+    public static string? TelegramProxyUrl { get; set; }
+
     public static HangfireAppSettings Hangfire { get; set; } = new();
 }
