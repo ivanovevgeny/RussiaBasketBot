@@ -18,13 +18,14 @@ public class ParserService(ILogger<ParserService> logger, MongoDbContext db)
             var web = new HtmlWeb();
             var doc = await web.LoadFromWebAsync($"{BaseUrl}/superliga/men/teams/");
             var teamNodes = doc.DocumentNode.SelectNodes("//a[contains(@class, ' teams-item ')]");
+            if (teamNodes == null)
+            {
+                logger.LogWarning("Team nodes not found");
+                return 0;
+            }
 
             var teamsCollection = db.Teams;
 
-            // удаляем старые
-            await teamsCollection.DeleteManyAsync(Builders<Team>.Filter.Empty);
-
-            // вставляем новые
             var teams = new List<Team>();
             foreach (var teamNode in teamNodes)
             {
@@ -69,6 +70,8 @@ public class ParserService(ILogger<ParserService> logger, MongoDbContext db)
 
             if (teams.Any())
             {
+                // заменяем старые только если удалось распарсить новые
+                await teamsCollection.DeleteManyAsync(Builders<Team>.Filter.Empty);
                 await teamsCollection.InsertManyAsync(teams);
                 logger.LogInformation("Successfully imported {Count} teams", teams.Count);
             }
@@ -223,6 +226,8 @@ public class ParserService(ILogger<ParserService> logger, MongoDbContext db)
 
             if (matches.Any())
             {
+                await EnsureTeamsUpToDate(matches);
+
                 if (updateAll)
                 {
                     await matchesCollection.DeleteManyAsync(Builders<Match>.Filter.Empty);
@@ -265,6 +270,30 @@ public class ParserService(ILogger<ParserService> logger, MongoDbContext db)
         {
             logger.LogError(ex, "Failed to parse matches");
             throw;
+        }
+    }
+
+    // Если в матчах встречаются команды, которых нет в БД (например, начался новый сезон), обновляем список команд
+    private async Task EnsureTeamsUpToDate(List<Match> matches)
+    {
+        try
+        {
+            var storedTeamIds = (await db.Teams.Find(Builders<Team>.Filter.Empty).Project(t => t.TeamId).ToListAsync()).ToHashSet();
+
+            var unknownTeamIds = matches
+                .SelectMany(m => new[] { m.HomeTeamId, m.GuestTeamId })
+                .Where(id => id != 0 && !storedTeamIds.Contains(id))
+                .Distinct()
+                .ToList();
+
+            if (!unknownTeamIds.Any()) return;
+
+            logger.LogInformation("Found unknown teams {TeamIds}, updating teams", string.Join(", ", unknownTeamIds));
+            await ParseTeams();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to update teams");
         }
     }
 }
