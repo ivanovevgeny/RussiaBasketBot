@@ -1,0 +1,118 @@
+{
+  "items": [
+    {
+      "team": {
+        "id": 1604,
+        "name": "ЧБК",
+        "regionName": "Челябинская область",
+        "logo": "https://img.infobasket.su/logo/40459.png"
+      }
+    },
+    {
+      "team": {
+        "id": 972,
+        "name": "Химки",
+        "regionName": "Московская область",
+        "logo": "https://files.infobasket.su/logos/17363.png"
+      }
+    },
+    {
+      "team": {
+        "id": 28016,
+        "name": "Динамо",
+        "regionName": "Грозный",
+        "logo": "https://files.infobasket.su/logos/16613.png"
+      }
+    },
+    {
+      "team": {
+        "id": 3204,
+        "name": "Новосибирск",
+        "regionName": "Новосибирск",
+        "logo": "https://files.infobasket.su/logos/3622.png"
+      }
+    },
+    {
+      "team": {
+        "id": 227,
+        "name": "Темп-СУМЗ",
+        "regionName": "Ревда",
+        "logo": "https://files.infobasket.su/logos/19131.png"
+      }
+    },
+    {
+      "team": {
+        "id": 760,
+        "name": "Югра",
+        "regionName": "Сургут",
+        "logo": "https://files.infobasket.su/logos/2364.png"
+      }
+    },
+    {
+      "team": {
+        "id": 36937,
+        "name": "Динамо",
+        "regionName": "Уфа",
+        "logo": "https://img.infobasket.su/logo/65664.png"
+      }
+    },
+    {
+      "team": {
+        "id": 741,
+        "name": "ЦСКА-2",
+        "regionName": "Москва",
+        "logo": "https://files.infobasket.su/logos/3624.png"
+      }
+    },
+    {
+      "team": {
+        "id": 3279,
+        "name": "Купол-Родники",
+        "regionName": "Ижевск",
+        "logo": "https://files.infobasket.su/logos/3626.png"
+      }
+    },
+    {
+      "team": {
+        "id": 761,
+        "name": "Металлург",
+        "regionName": "Магнитогорск",
+        "logo": "https://img.infobasket.su/logo/23567.png"
+      }
+    },
+    {
+      "team": {
+        "id": 20330,
+        "name": "Барнаул",
+        "regionName": "Алтайский край",
+        "logo": "https://files.infobasket.su/logos/13617.png"
+      }
+    },
+    {
+      "team": {
+        "id": 3277,
+        "name": "Тамбов",
+        "regionName": "Тамбовская область",
+        "logo": "https://img.infobasket.su/logo/23813.png"
+      }
+    },
+    {
+      "team": {
+        "id": 2972,
+        "name": "Русичи",
+        "regionName": "Курск",
+        "logo": "https://files.infobasket.su/logos/21556.png"
+      }
+    },
+    {
+      "team": {
+        "id": 20778,
+        "name": "Десна",
+        "regionName": "Брянская область",
+        "logo": "https://img.infobasket.su/logo/40954.png"
+      }
+    }
+  ],
+  "totalCount": 14,
+  "status": "Ok"
+}

@@ -72,6 +72,9 @@ try
     
     builder.Services.AddSingleton<BasketballService>();
 
+    builder.Services.AddHttpClient("basketball", client => client.Timeout = TimeSpan.FromSeconds(30));
+    builder.Services.AddSingleton<BasketballApiClient>();
+
     builder.Services.AddSingleton<ParserService>();
 
     builder.Services.AddSingleton<NotifyService>();

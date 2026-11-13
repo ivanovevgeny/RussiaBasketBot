@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using RussiaBasketBot.Models;
+using System.Collections.Concurrent;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -10,7 +11,7 @@ namespace RussiaBasketBot.Services;
 public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, ParserService parserService, BasketballService basketballService, ITelegramBotClient botClient)
 {
     private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(3);
-    private readonly Dictionary<string, (string Text, DateTime Expiry)> _cache = new();
+    private readonly ConcurrentDictionary<string, (string Text, DateTime Expiry)> _cache = new();
 
     private bool TryGetCache(string key, out string text)
     {
@@ -31,7 +32,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
         const string cacheKey = "standings";
         if (TryGetCache(cacheKey, out var cached)) return cached;
 
-        var standings = await parserService.ParseStandings();
+        var standings = await parserService.ParseStandings(cancellationToken);
         if (standings.Count == 0) return "Таблица не найдена";
 
         const int nameWidth = 18;
@@ -88,7 +89,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
         {
             logger.LogInformation("Starting match parsing and notification process");
             await parserService.ParseMatches(true);
-            await NotifyTelegramGroups(newestOrLatest, token, date: DateOnly.FromDateTime(DateTime.UtcNow));
+            await NotifyTelegramGroups(newestOrLatest, token, date: DateOnly.FromDateTime(DateTime.UtcNow.UtcToMsc()));
         }
         catch (Exception ex)
         {
@@ -107,14 +108,7 @@ public class NotifyService(ILogger<NotifyService> logger, MongoDbContext db, Par
 
             if (!chatIdList.Any()) return;
 
-            var matches = await basketballService.GetMatches(newestOrLatest, date: date);
-
-            // если ищем последние матчи и есть те, что в Процессе, то парсим заново
-            if (!newestOrLatest && matches.Any(x => x.Status is MatchStatus.Live or MatchStatus.Plan))
-            {
-                await parserService.ParseMatches(true);
-                matches = await basketballService.GetMatches(newestOrLatest, date: date);
-            }
+            var matches = await basketballService.GetMatches(newestOrLatest, date: date, refresh: chatId != null);
 
             if (chatId != null && !matches.Any())
             {

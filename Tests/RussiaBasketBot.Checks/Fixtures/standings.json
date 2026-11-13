@@ -1,0 +1,142 @@
+{
+  "items": [
+    {
+      "standings": []
+    },
+    {
+      "standings": [
+        {
+          "place": 1,
+          "name": "Динамо",
+          "regionName": "Уфа",
+          "totalGames": 8,
+          "totalWin": 7,
+          "totalDefeat": 1,
+          "totalPoints": 15
+        },
+        {
+          "place": 2,
+          "name": "Темп-СУМЗ",
+          "regionName": "Ревда",
+          "totalGames": 8,
+          "totalWin": 7,
+          "totalDefeat": 1,
+          "totalPoints": 15
+        },
+        {
+          "place": 3,
+          "name": "ЧБК",
+          "regionName": "Челябинская область",
+          "totalGames": 8,
+          "totalWin": 7,
+          "totalDefeat": 1,
+          "totalPoints": 15
+        },
+        {
+          "place": 4,
+          "name": "Динамо",
+          "regionName": "Грозный",
+          "totalGames": 9,
+          "totalWin": 7,
+          "totalDefeat": 2,
+          "totalPoints": 16
+        },
+        {
+          "place": 5,
+          "name": "Химки",
+          "regionName": "Московская область",
+          "totalGames": 9,
+          "totalWin": 6,
+          "totalDefeat": 3,
+          "totalPoints": 15
+        },
+        {
+          "place": 6,
+          "name": "ЦСКА-2",
+          "regionName": "Москва",
+          "totalGames": 9,
+          "totalWin": 6,
+          "totalDefeat": 3,
+          "totalPoints": 15
+        },
+        {
+          "place": 7,
+          "name": "Тамбов",
+          "regionName": "Тамбовская область",
+          "totalGames": 8,
+          "totalWin": 3,
+          "totalDefeat": 5,
+          "totalPoints": 11
+        },
+        {
+          "place": 8,
+          "name": "Барнаул",
+          "regionName": "Алтайский край",
+          "totalGames": 8,
+          "totalWin": 3,
+          "totalDefeat": 5,
+          "totalPoints": 11
+        },
+        {
+          "place": 9,
+          "name": "Металлург",
+          "regionName": "Магнитогорск",
+          "totalGames": 8,
+          "totalWin": 3,
+          "totalDefeat": 5,
+          "totalPoints": 11
+        },
+        {
+          "place": 10,
+          "name": "Новосибирск",
+          "regionName": "Новосибирск",
+          "totalGames": 8,
+          "totalWin": 3,
+          "totalDefeat": 5,
+          "totalPoints": 11
+        },
+        {
+          "place": 11,
+          "name": "Югра",
+          "regionName": "Сургут",
+          "totalGames": 9,
+          "totalWin": 3,
+          "totalDefeat": 6,
+          "totalPoints": 12
+        },
+        {
+          "place": 12,
+          "name": "Десна",
+          "regionName": "Брянская область",
+          "totalGames": 8,
+          "totalWin": 1,
+          "totalDefeat": 7,
+          "totalPoints": 9
+        },
+        {
+          "place": 13,
+          "name": "Купол-Родники",
+          "regionName": "Ижевск",
+          "totalGames": 8,
+          "totalWin": 1,
+          "totalDefeat": 7,
+          "totalPoints": 9
+        },
+        {
+          "place": 14,
+          "name": "Русичи",
+          "regionName": "Курск",
+          "totalGames": 8,
+          "totalWin": 1,
+          "totalDefeat": 7,
+          "totalPoints": 9
+        }
+      ]
+    },
+    {
+      "standings": []
+    }
+  ],
+  "totalCount": 3,
+  "status": "Ok"
+}

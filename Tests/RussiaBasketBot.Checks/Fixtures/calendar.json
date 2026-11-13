@@ -1,0 +1,86 @@
+{
+  "items": [
+    {
+      "comp": {
+        "name": "Регулярный чемпионат"
+      },
+      "team2": {
+        "teamId": 3204
+      },
+      "game": {
+        "id": 1083466,
+        "gameStatus": "ResultConfirmed",
+        "scheduledTime": "2026-10-01T18:00:00+05:00",
+        "hasTime": true,
+        "localDate": "01.10.2026",
+        "score1": 105,
+        "score2": 77
+      },
+      "team1": {
+        "teamId": 227
+      }
+    },
+    {
+      "comp": {
+        "name": "Регулярный чемпионат"
+      },
+      "team2": {
+        "teamId": 36937
+      },
+      "game": {
+        "id": 1083519,
+        "gameStatus": "ResultConfirmed",
+        "scheduledTime": "2026-11-12T21:00:00+05:00",
+        "hasTime": true,
+        "localDate": "12.11.2026",
+        "score1": 63,
+        "score2": 86
+      },
+      "team1": {
+        "teamId": 741
+      }
+    },
+    {
+      "comp": {
+        "name": "Регулярный чемпионат"
+      },
+      "team2": {
+        "teamId": 3204
+      },
+      "game": {
+        "id": 1083533,
+        "gameStatus": "Scheduled",
+        "scheduledTime": "2026-12-04T02:00:00+05:00",
+        "hasTime": false,
+        "localDate": "04.12.2026",
+        "score1": 0,
+        "score2": 0
+      },
+      "team1": {
+        "teamId": 972
+      }
+    },
+    {
+      "comp": {
+        "name": "Регулярный чемпионат"
+      },
+      "team2": {
+        "teamId": 20778
+      },
+      "game": {
+        "id": 1083522,
+        "gameStatus": "Scheduled",
+        "scheduledTime": "2026-11-13T19:00:00+05:00",
+        "hasTime": true,
+        "localDate": "13.11.2026",
+        "score1": 0,
+        "score2": 0
+      },
+      "team1": {
+        "teamId": 1604
+      }
+    }
+  ],
+  "totalCount": 4,
+  "status": "Ok"
+}
